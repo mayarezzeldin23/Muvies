@@ -14,6 +14,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,8 +33,8 @@ class HomeViewModel(val database: MoviesDatabase) : ViewModel() {
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
     private var _moviesLiveData: MutableLiveData<List<Movies>> = MutableLiveData(emptyList())
     val moviesLiveData: LiveData<List<Movies>> = _moviesLiveData
-    private var _movieItemLiveData: MutableLiveData<Movies> = MutableLiveData()
-    val movieItemLiveData: LiveData<Movies> = _movieItemLiveData
+    private var _movieItemLiveData=  MutableSharedFlow<Movies>()
+    val movieItemLiveData: SharedFlow<Movies> = _movieItemLiveData
 
     init {
         initializeMovies()
@@ -102,7 +104,7 @@ class HomeViewModel(val database: MoviesDatabase) : ViewModel() {
 
     fun getMovieItem(movie: Movies) {
         viewModelScope.launch(Dispatchers.IO) {
-          _movieItemLiveData.postValue(database.moviesDatabaseDao.getMovie(movie.id))
+            database.moviesDatabaseDao.getMovie(movie.id)?.let { _movieItemLiveData.emit(it) }
         }
     }
 

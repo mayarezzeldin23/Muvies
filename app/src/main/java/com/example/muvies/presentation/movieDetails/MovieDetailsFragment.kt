@@ -55,7 +55,6 @@ class MovieDetailsFragment : Fragment() {
         webView.settings.pluginState = WebSettings.PluginState.ON_DEMAND
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.webViewClient = WebViewClient()
-
         webView.loadUrl(videoUrl)
     }
 

@@ -6,18 +6,25 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.muvies.database.Movies
 import com.example.muvies.databinding.FragmentHomeBinding
 import com.example.muvies.presentation.addMovie.AddMovieFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.coroutines.coroutineContext
 
 
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
     val homeViewModel: HomeViewModel by viewModel()
-    //private lateinit var adapter: HomeAdapter
+
 
 
     override fun onCreateView(
@@ -40,6 +47,8 @@ class HomeFragment : Fragment() {
 
 
         observeMovies()
+
+
         return binding.root
     }
 
@@ -62,17 +71,20 @@ class HomeFragment : Fragment() {
                 Log.i("Observe", movies.toString())
             }
         }
+        lifecycleScope.launch {
 
-        homeViewModel.movieItemLiveData.observe(viewLifecycleOwner) { movieItem ->
-            if (movieItem != null) {
-                val addMovieFragment = AddMovieFragment(onAddMovie = {
-                    homeViewModel.onEditMovie(it)
-                }, movieItem)
-                addMovieFragment.show(childFragmentManager, "AddMovieFragment")
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                homeViewModel.movieItemLiveData.collect { movieItem ->
+                    if (movieItem != null) {
+                        val addMovieFragment = AddMovieFragment(onAddMovie = {
+                            homeViewModel.onEditMovie(it)
+                        }, movieItem)
+                        addMovieFragment.show(childFragmentManager, "AddMovieFragment")
+                    }
+                }
+
             }
         }
-
-
     }
 
 
